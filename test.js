@@ -1,153 +1,298 @@
-const dataPointQL = require("./index");
+const { dpQL, internal } = require("./index");
 
-test("Empty query test", () => {
-  const query = {};
-  console.log(`query: {}, output: $.`)
-  expect(dataPointQL.gql(query)).toBe("$.");
-});
+describe("Unit Tests", () => {
+    describe("Query String → AST", () => {
+        test.skip("todo", ()=>{
+            return false;
+        })
+    })
 
-test("No child", () => {
-  const query = {
-      name: "id1"
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1`)
-  expect(dataPointQL.gql(query)).toBe("$id1");
-});
+    describe("AST → Transformation Expression", () => {
+        describe("Case: Empty", () => {
+            test("Empty query", () => {
+                const ast = {};
+                expect(internal.generateTransformationExpression(ast)).toBe("$.");
+            });
+        })
 
-test("No child with undefined index", () => {
-  const query = {
-      name: "id1",
-      index: null
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1`)
-  expect(dataPointQL.gql(query)).toBe("$id1");
-});
+        describe("Case: No Child", () => {
+            test("Base Case", () => {
+                const ast = {
+                    name: "id1"
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1");
+            });
 
-test("No child with index 0", () => {
-  const query = {
-      name: "id1",
-      index: 0
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1[0]`)
-  expect(dataPointQL.gql(query)).toBe("$id1[0]");
-});
+            test("Case: With undefined index", () => {
+                const ast = {
+                    name: "id1",
+                    index: null
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1");
+            });
 
-test("Single child", () => {
-  const query = {
-      name: "id1",
-      child: {
-          name: "id2"
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1.id2`)
-  expect(dataPointQL.gql(query)).toBe("$id1.id2");
-});
+            test("Case: With index 0", () => {
+                const ast = {
+                    name: "id1",
+                    index: 0
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1[0]");
+            });
+        })
 
-test("Single child with index on parent", () => {
-  const query = {
-      name: "id1",
-      index: 0,
-      child: {
-          name: "id2"
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1[0].id2`)
-  expect(dataPointQL.gql(query)).toBe("$id1[0].id2");
-});
+        describe("Case: Single Child", () => {
+            test("Base Case", () => {
+                const ast = {
+                    name: "id1",
+                    child: {
+                        name: "id2"
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1.id2");
+            });
 
-test("Single child with index on child", () => {
-  const query = {
-      name: "id1",
-      child: {
-          name: "id2",
-          index: 0
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1.id2[0]`)
-  expect(dataPointQL.gql(query)).toBe("$id1.id2[0]");
-});
+            test("Single child with index on parent", () => {
+                const ast = {
+                    name: "id1",
+                    index: 0,
+                    child: {
+                        name: "id2"
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1[0].id2");
+            });
 
-test("Single child with index on both the parent and the child", () => {
-  const query = {
-      name: "id1",
-      index: 0,
-      child: {
-          name: "id2",
-          index: 0
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1[0].id2[0]`)
-  expect(dataPointQL.gql(query)).toBe("$id1[0].id2[0]");
-});
+            test("Single child with index on child", () => {
+                const ast = {
+                    name: "id1",
+                    child: {
+                        name: "id2",
+                        index: 0
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1.id2[0]");
+            });
+
+            test("Single child with index on both the parent and the child", () => {
+                const ast = {
+                    name: "id1",
+                    index: 0,
+                    child: {
+                        name: "id2",
+                        index: 0
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1[0].id2[0]");
+            });
+        })
+
+        describe("Case: Double Child", () => {
+            test("Base Case", () => {
+                const ast = {
+                    name: "id1",
+                    child: {
+                        name: "id2",
+                        child: {
+                            name: "id3"
+                        }
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1.id2.id3");
+            });
+
+            test("Double child with index on last child", () => {
+                const ast = {
+                    name: "id1",
+                    child: {
+                        name: "id2",
+                        child: {
+                            name: "id3",
+                            index: 1
+                        }
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1.id2.id3[1]");
+            });
+
+            test("Double child with index on root last child", () => {
+                const ast = {
+                    name: "id1",
+                    index: 0,
+                    child: {
+                        name: "id2",
+                        child: {
+                            name: "id3",
+                            index: 1
+                        }
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1[0].id2.id3[1]");
+            });
+
+            test("Double child with index on all", () => {
+                const ast = {
+                    name: "id1",
+                    index: 0,
+                    child: {
+                        name: "id2",
+                        index: 1231,
+                        child: {
+                            name: "id3",
+                            index: 1
+                        }
+                    }
+                };
+                expect(internal.generateTransformationExpression(ast)).toBe("$id1[0].id2[1231].id3[1]");
+            });
+        })
+    })
+})
+
+describe("Product Tests", () => {
+    //we test different use-cases
+    describe("Use-Case Testing", () => {
+        test("#1", () => {
+            let query = dpQL`
+                {
+                    hello{
+                        foo{
+                            bar
+                        }
+                    }
+                }
+            `
+
+            console.log(internal.generateAbstractSyntaxTree(`
+            {
+                hello{
+                    foo{
+                        bar
+                    }
+                }
+            }
+        `))
+
+            expect(query).toBe("$.hello.foo.bar")
+        })
+
+        test.only("#2", () => {
+            let query = dpQL`{hello}
+        `
+            expect(query).toBe("$.hello")
+        })
+
+        test("findNextScope", ()=>{
+            console.log(internal.findNextScope(`{hello}`))
+            expect(internal.findNextScope(`{hello}`)).toBe("hello")
+        })
+    })
+
+    describe("Error Checking Tests", () => {
+        test("Empty string", () => {
+            expect(() => dpQL``).toThrow(/no query detectd/)
+        })
+
+        test("Empty query object", () => {
+            let result = dpQL`{}`
+            expect(result).toBe("$.")
+        })
+
+        test("White Space Only", () => {
+            expect(() => dpQL`
+                             
+                        
+
+            ` ).toThrow(/no query detectd/)
+        })
+
+        describe.skip("Unbalenced Brackets", () => {
+
+            test("Unbalenced Brackets #1", () => {
+                let result = dpQL`
+                {
+                    foo{
+                        bar
+                    }}
+                }}
+                `
+                expect(result).toThrow(/unexpected amount of closing brackets/)
+            })
+
+            test("Unbalenced Brackets #2", () => {
+                let result = dpQL`
+                {{
+                    foo{{
+                        bar
+                    }
+                }
+                `
+                expect(result).toThrow(/unexpected bracket/)
+            })
+
+            test("Unbalenced Brackets #3", () => {
+                let result = dpQL`
+                {
+                    foo{a{
+                        bar
+                    }
+                }}
+                `
+
+                //the query above get's interpreted as:
+                /*
+                    {
+                        foo{
+                            {
+                                bar
+                            }
+                        }
+                    }
+                    
+                    {
+                        "name":"",
+                        "child":{
+                            "name":"foo{",
+                            "child":{
+                                "name":"",
+                                "child":{
+                                    "name":"bar"
+                                }
+                            }
+                        }
+                    }
+    
+    
+                    $.foo{..bar
+                */
+
+                console.log(`result:`, result);
+
+                expect(result).toThrow()
+            })
 
 
-test("Double child", () => {
-  const query = {
-      name: "id1",
-      child: {
-          name: "id2",
-          child: {
-              name: "id3"
-          }
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1.id2.id3`)
-  expect(dataPointQL.gql(query)).toBe("$id1.id2.id3");
-});
+            test("Balenced - Brackets Only", () => {
+                let result = dpQL`{  { {      {}}}    }`
+                expect(result).toThrowError()
+            })
 
-test("Double child with index on last child", () => {
-  const query = {
-      name: "id1",
-      child: {
-          name: "id2",
-          child: {
-              name: "id3",
-              index: 1
-          }
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1.id2.id3[1]`)
-  expect(dataPointQL.gql(query)).toBe("$id1.id2.id3[1]");
-});
+            test("Unbalenced Brackets Only", () => {
+                let result = dpQL`
+                    {{{{{}}
+                `
+                expect(result).toThrowError()
+            })
 
-test("Double child with index on root last child", () => {
-  const query = {
-      name: "id1",
-      index: 0,
-      child: {
-          name: "id2",
-          child: {
-              name: "id3",
-              index: 1
-          }
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1[0].id2.id3[1]`)
-  expect(dataPointQL.gql(query)).toBe("$id1[0].id2.id3[1]");
-});
+        })
 
-test("Double child with index on all", () => {
-  const query = {
-      name: "id1",
-      index: 0,
-      child: {
-          name: "id2",
-          index: 1231,
-          child: {
-              name: "id3",
-              index: 1
-          }
-      }
-    };
-  console.log(`query: ${JSON.stringify(query)}, output: $id1[0].id2[1231].id3[1]`)
-  expect(dataPointQL.gql(query)).toBe("$id1[0].id2[1231].id3[1]");
-});
+    })
+})
 
-test("100% TEST COVERAGE", () => {
-console.log('\x1b[36m%s\x1b[0m', `                                                                                                   
- ___   ___ ___ __ __    _____ _____ _____ _____    _____ _____ _____ _____ _____ _____ _____ _____ 
-|_  | |   |   |__|  |  |_   _|   __|   __|_   _|  |     |     |  |  |   __| __  |  _  |   __|   __|
- _| |_| | | | |   __|    | | |   __|__   | | |    |   --|  |  |  |  |   __|    -|     |  |  |   __|
-|_____|___|___|__|__|    |_| |_____|_____| |_|    |_____|_____|\___/|_____|__|__|__|__|_____|_____|
-                                                                                                  `);
-} )
+
+//integration tests are full tests where we actually create data points and test various data point functionality like hash, tranform, etc
+describe("Integration Tests", () => {
+    //todo: implement integration tests
+    test.skip("todo", ()=>{
+        return false;
+    })
+})
