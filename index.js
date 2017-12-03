@@ -31,9 +31,11 @@ let internal = {
     generateAbstractSyntaxTree(query, abstractSyntaxTree={}){
         const nextScope = internal.findNextScope(query)
 
+        // console.log(nextScope);
         //we should procede reccursively if the next node is not a leaf node
         if(!internal.isLeafNode(nextScope)){
             let tag = internal.findTag(query);
+            // console.log(tag);
       
             //find index
             let indexQueryRegex = /\[\d+]/g
@@ -41,6 +43,8 @@ let internal = {
                 //has index
                 let index = tag.match(indexQueryRegex)[0]
                 index = index.substring(1, index.length - 1)
+
+                console.log(tag.replace(indexQueryRegex, "").trim())
       
                 return {
                     name: tag.replace(indexQueryRegex, "").trim(),
@@ -48,12 +52,14 @@ let internal = {
                     child: internal.generateAbstractSyntaxTree(nextScope, abstractSyntaxTree.child)
                 }
             }else{
+                // console.log(tag.trim())
                 return {
                     name: tag.trim(),
                     child: internal.generateAbstractSyntaxTree(nextScope, abstractSyntaxTree.child)
                 }
             }
         }else{
+            // console.log(nextScope.trim())
             return {name: nextScope.trim()}
         }
       },
@@ -86,7 +92,10 @@ let internal = {
     },
 
     findTag(string) {
-        return string.trim().match(/.*(?={)/g)[0]
+        // console.log(string.trim().match(/.*(?={)/g))
+        // return string.trim().match(/.*(?={)/g)[0]
+        // console.log(string)
+        return string.trim().match(/(?<={)(.*?)(?={)/g)[0]
     },
 
     isLeafNode(scope) {
@@ -96,7 +105,7 @@ let internal = {
 
 function dpQL(strings) {
     let completeString = strings.reduce((prev, curr) => prev + curr)
-                                .replace(/\s+/g, "") //get rid of whitespace (we don't care about it, it just get's in the way)
+                                .replace(/\s+/g, "") //get rid of whitespace (we don't care about it, it just gets in the way)
 
 
     //error check

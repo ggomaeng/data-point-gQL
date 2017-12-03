@@ -156,8 +156,8 @@ describe("Product Tests", () => {
         test("#1", () => {
             let query = dpQL`
                 {
-                    hello{
-                        foo{
+                    hello {
+                        foo {
                             bar
                         }
                     }
