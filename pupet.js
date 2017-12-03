@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer");
+const fs = require("fs");
 
 (async () => {
 
@@ -21,7 +22,7 @@ const puppeteer = require("puppeteer");
     URLs.forEach((url, index) => {
         newBatch.push(url);
 
-        if (index % 3 === 0) {
+        if (index % 2 === 0) {
             //flush the batch to batches
             batches.push(newBatch);
             newBatch = [];
@@ -36,12 +37,16 @@ const puppeteer = require("puppeteer");
             console.log(`Opening page ${url}`)
             let newPage = await browser.newPage();
                 await newPage.goto(url);
+
                 let result = await newPage.evaluate(()=>{
-                    return "hello world"
+                    return Array.from(document.querySelectorAll("*")).filter(el => el.childElementCount === 0 && !(el.tagName === "SCRIPT" || el.tagName === "STYLE" || el.tagName === "NOSCRIPT")).filter(el =>  el.textContent.replace(/\s/g, "").length > 200).reduce((acc, curr) => acc+curr.textContent, "")
                 })
-                console.log("result", result, url)
+
+                results.push(result);
         }
     }
+
+    console.log("Done!")
 
 
 
