@@ -4,8 +4,29 @@ describe("Unit Tests", () => {
     describe("Query String → AST", () => {
         describe("Find Tag", ()=>{
             test("Base Case", ()=>{
-                
+                let query = `
+                hello{
+                    foo{
+                        bar
+                    }
+                }
+                `
+
+                expect(internal.findTag(query)).toBe("hello")
             })
+
+            test("Empty Case", ()=>{
+                let query = `
+                {
+                    foo{
+                        bar
+                    }
+                }
+                `
+
+                expect(internal.findTag(query)).toBe("")
+            })
+
         })
     })
 
