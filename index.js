@@ -31,14 +31,8 @@ let internal = {
     generateAbstractSyntaxTree(query, abstractSyntaxTree={}){
         const nextScope = internal.findNextScope(query)
 
-        console.log(`nextScope:`, nextScope);
-        console.log(`query:`, query);
-
         //we should procede reccursively if the next node is not a leaf node
         if(!internal.isLeafNode(nextScope)){
-            
-
-            console.log("askdfhlasudhflsuah")
             let tag = internal.findTag(query);
       
             //find index

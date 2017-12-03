@@ -2,8 +2,10 @@ const { dpQL, internal } = require("./index");
 
 describe("Unit Tests", () => {
     describe("Query String → AST", () => {
-        test.skip("todo", ()=>{
-            return false;
+        describe("Find Tag", ()=>{
+            test("Base Case", ()=>{
+                
+            })
         })
     })
 
@@ -161,29 +163,13 @@ describe("Product Tests", () => {
                     }
                 }
             `
-
-            console.log(internal.generateAbstractSyntaxTree(`
-            {
-                hello{
-                    foo{
-                        bar
-                    }
-                }
-            }
-        `))
-
             expect(query).toBe("$.hello.foo.bar")
         })
 
-        test.only("#2", () => {
+        test("#2", () => {
             let query = dpQL`{hello}
         `
-            expect(query).toBe("$.hello")
-        })
-
-        test("findNextScope", ()=>{
-            console.log(internal.findNextScope(`{hello}`))
-            expect(internal.findNextScope(`{hello}`)).toBe("hello")
+            expect(query).toBe("$hello")
         })
     })
 
